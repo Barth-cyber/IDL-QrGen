@@ -114,34 +114,16 @@
                 <hr style="margin:16px 0">
 
                 <h2>Social Media Links Mode</h2>
-                <div class="form-group">
-                    <label for="socialPlatform">Add Social Platform</label>
-                    <select id="socialPlatform">
-                        <option value="">-- Select Platform --</option>
-                        <option value="whatsapp">WhatsApp Business</option>
-                        <option value="instagram">Instagram Channel</option>
-                        <option value="facebook">Facebook Page</option>
-                        <option value="tiktok">TikTok Profile</option>
-                        <option value="youtube">YouTube Channel</option>
-                        <option value="linkedin">LinkedIn Profile</option>
-                        <option value="twitter">Twitter (X)</option>
-                        <option value="pinterest">Pinterest</option>
-                    </select>
+                <div id="socialRowsContainer" style="margin-top:6px;">
+                    <!-- Dynamic rows will be inserted here -->
                 </div>
 
-                <div class="form-group">
-                    <label for="socialUrl">Platform URL</label>
-                    <input type="url" id="socialUrl" placeholder="https://wa.me/1234567890 or https://instagram.com/..." />
-                </div>
-
-                <div class="button-group">
-                    <button class="btn-generate" onclick="addSocialLink()">Add Link</button>
-                </div>
-
-                <div id="socialLinksList" style="margin-top:12px; display:none;">
-                    <label style="display:block; margin-bottom:8px">Added Social Links:</label>
-                    <div id="socialLinksDisplay" style="background:#f9f9f9; border:1px solid #eee; border-radius:6px; padding:8px"></div>
-                    <button class="btn-generate" onclick="generateSocialQR()" style="width:100%; margin-top:10px">Generate Social QR Code</button>
+                <div style="margin-top:8px;">
+                    <div class="helper-text">Add one or more social platforms and their URLs. As you fill a row a new empty row will appear.</div>
+                    <div class="button-group" style="margin-top:10px">
+                        <button class="btn-generate" onclick="generateSocialQR()">Generate Social QR Code</button>
+                        <button class="btn-reset" onclick="clearSocialRows()">Clear Links</button>
+                    </div>
                 </div>
 
                 <hr style="margin:16px 0">
@@ -193,6 +175,96 @@
             'twitter': 'Twitter (X)',
             'pinterest': 'Pinterest'
         };
+
+        // ---- Dynamic social rows UI ----
+        function createSocialRow(platform = '', url = '') {
+            const container = document.createElement('div');
+            container.className = 'form-group social-row';
+            container.style.display = 'flex';
+            container.style.gap = '8px';
+            container.style.alignItems = 'center';
+
+            const select = document.createElement('select');
+            select.className = 'social-platform';
+            select.style.minWidth = '180px';
+            select.innerHTML = `
+                <option value="">-- Select Platform --</option>
+                <option value="whatsapp">WhatsApp Business</option>
+                <option value="instagram">Instagram Channel</option>
+                <option value="facebook">Facebook Page</option>
+                <option value="tiktok">TikTok Profile</option>
+                <option value="youtube">YouTube Channel</option>
+                <option value="linkedin">LinkedIn Profile</option>
+                <option value="twitter">Twitter (X)</option>
+                <option value="pinterest">Pinterest</option>
+            `;
+            select.value = platform;
+
+            const input = document.createElement('input');
+            input.type = 'url';
+            input.className = 'social-url';
+            input.placeholder = 'https://...';
+            input.style.flex = '1';
+            input.value = url;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-reset';
+            removeBtn.textContent = 'Remove';
+            removeBtn.style.flex = '0 0 auto';
+            removeBtn.onclick = () => removeSocialRow(removeBtn);
+
+            // wire events: when row becomes filled and is last row, append a new empty row
+            function rowChanged() {
+                const rows = Array.from(document.querySelectorAll('.social-row'));
+                const isLast = rows[rows.length - 1] === container;
+                if (select.value && input.value && isLast) addSocialRow();
+            }
+
+            select.addEventListener('change', rowChanged);
+            input.addEventListener('input', rowChanged);
+
+            container.appendChild(select);
+            container.appendChild(input);
+            container.appendChild(removeBtn);
+
+            return container;
+        }
+
+        function addSocialRow(platform = '', url = '') {
+            const wrapper = document.getElementById('socialRowsContainer');
+            const row = createSocialRow(platform, url);
+            wrapper.appendChild(row);
+
+            // show remove buttons when more than one row
+            updateSocialRowRemoveButtons();
+        }
+
+        function removeSocialRow(btn) {
+            const row = btn.closest('.social-row');
+            if (!row) return;
+            row.remove();
+            updateSocialRowRemoveButtons();
+        }
+
+        function updateSocialRowRemoveButtons() {
+            const rows = Array.from(document.querySelectorAll('.social-row'));
+            rows.forEach((r, idx) => {
+                const btn = r.querySelector('button');
+                if (!btn) return;
+                btn.style.display = rows.length > 1 ? 'inline-block' : 'none';
+            });
+        }
+
+        function clearSocialRows() {
+            const wrapper = document.getElementById('socialRowsContainer');
+            wrapper.innerHTML = '';
+            addSocialRow();
+        }
+
+        // initialize one empty row on load (below we call addSocialRow on load)
+
+        // ---- End dynamic social rows UI ----
 
         function createQRCodeElement(text, size) {
             const container = document.createElement('div');
@@ -349,69 +421,35 @@
             saveAs(content, `IDL_QR_Batch_${new Date().toISOString().slice(0,10)}.zip`);
         }
 
-        window.addEventListener('load', () => { document.getElementById('urlInput').focus(); });
+        window.addEventListener('load', () => { document.getElementById('urlInput').focus(); addSocialRow(); });
         document.getElementById('urlInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') generateQR(); });
 
-        // Social Media Links Mode Functions
-        function addSocialLink() {
-            const platform = document.getElementById('socialPlatform').value.trim();
-            const url = document.getElementById('socialUrl').value.trim();
-            
-            if (!platform) { alert('Please select a platform'); return; }
-            if (!url) { alert('Please enter a URL'); return; }
-            
-            try { new URL(url); } catch { alert('Please enter a valid URL'); return; }
-            
-            // Add to list
-            socialLinks.push({ platform, url, label: platformNames[platform] || platform });
-            
-            // Update display
-            updateSocialLinksDisplay();
-            
-            // Clear inputs
-            document.getElementById('socialPlatform').value = '';
-            document.getElementById('socialUrl').value = '';
-        }
-
-        function updateSocialLinksDisplay() {
-            const container = document.getElementById('socialLinksDisplay');
-            const listContainer = document.getElementById('socialLinksList');
-            
-            if (socialLinks.length === 0) {
-                listContainer.style.display = 'none';
-                return;
+        // Collect social rows into an array of links
+        function collectSocialRows() {
+            const rows = Array.from(document.querySelectorAll('.social-row'));
+            const out = [];
+            for (const r of rows) {
+                const platform = (r.querySelector('.social-platform') || {}).value || '';
+                const url = (r.querySelector('.social-url') || {}).value || '';
+                if (platform && url) {
+                    try { new URL(url); } catch { continue; }
+                    out.push({ label: platformNames[platform] || platform, platform, url });
+                }
             }
-            
-            listContainer.style.display = 'block';
-            container.innerHTML = socialLinks.map((link, idx) => `
-                <div style="padding:8px; background:white; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center">
-                    <span><strong>${link.label}</strong></span>
-                    <button onclick="removeSocialLink(${idx})" style="background:#f0f0f0; border:0; padding:4px 8px; border-radius:3px; cursor:pointer; font-size:12px">Remove</button>
-                </div>
-            `).join('');
-        }
-
-        function removeSocialLink(idx) {
-            socialLinks.splice(idx, 1);
-            updateSocialLinksDisplay();
+            return out;
         }
 
         async function generateSocialQR() {
-            if (socialLinks.length === 0) { alert('Please add at least one social link'); return; }
-            
+            const links = collectSocialRows();
+            if (links.length === 0) { alert('Please add at least one valid social link'); return; }
+
             const size = parseInt(document.getElementById('qrSize').value || '300', 10);
             const embedLogo = document.getElementById('embedLogo').checked;
-            
-            // Create JSON string of social links
-            const linksJson = JSON.stringify(socialLinks.map(link => ({ 
-                label: link.label, 
-                platform: link.platform,
-                url: link.url 
-            })));
-            
-            // Build scan URL with encoded links
-            const scanUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}scan.html?links=${encodeURIComponent(linksJson)}`;
-            
+
+            const linksJson = JSON.stringify(links);
+            const base = `${window.location.origin}${window.location.pathname.replace('index.html', '')}`;
+            const scanUrl = `${base}scan.html?links=${encodeURIComponent(linksJson)}`;
+
             const container = document.getElementById('qrContainer');
             clearElement(container);
 
