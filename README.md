@@ -1,57 +1,175 @@
 # Interior Duct Ltd — QR Code Generator
 
-This repository contains a simple, client-side QR code generator tailored for Interior Duct Ltd. It runs entirely in the browser and doesn't send data to external servers.
+A private, client-side QR code generator for Interior Duct Ltd. Generates branded QR codes linking to a mobile app view displaying all social media channels. **No tracking, no external servers.**
 
-Files:
-- `index.html` — main QR generator app (single-file web app)
-- `scan.html` — mobile view app that displays social media links when QR is scanned
-- `assets/logo.jpg` — company logo used in header and as embedded logo option
-- `assets/furniture-bg.svg` — responsive background used on mobile view
+## 🚀 Live Site
 
-Features:
-- **Single URL QR Generation** — Enter any URL and generate a QR code with optional embedded logo
-- **Social Media Links Mode** — Add multiple social platforms (WhatsApp Business, Instagram, Facebook, etc.), then generate a single QR code that links to a branded mobile view page displaying all channels
-- **Batch Generation** — Paste multiple label,URL lines and generate a grid of QR codes
-- **Download Options** — Download single PNGs or download all as a ZIP (client-side)
-- **Responsive Design** — Mobile-optimized with furniture background
+**Generator:** https://barth-cyber.github.io/IDL-QrGen/  
+**Mobile View:** https://barth-cyber.github.io/IDL-QrGen/scan.html
 
-How to use locally:
-1. Open `index.html` in a browser (double-click or use `Live Server` extension).
-2. **For single URL QR**: Enter a URL and click "Generate QR Code".
-3. **For social media links**: 
-   - Go to "Social Media Links Mode" section
-   - Add each platform (WhatsApp, Instagram, etc.) with its URL
-   - Click "Generate Social QR Code" to create a QR that links to `scan.html` with all links
-4. Use the Batch section to paste multiple lines for bulk generation.
+## 📁 Files
 
-Social Media Links Mode Workflow:
-- Users add social channels with their URLs (e.g., WhatsApp Business link, Instagram Channel)
-- A single QR code is generated pointing to `scan.html?links=[encoded-json]`
-- When the QR is scanned on mobile, it displays a branded page with all social channels as clickable cards
-- The mobile view (`scan.html`) shows the Interior Duct Ltd logo, company description, and social media options
+- `index.html` — Main QR generator app (3 modes)
+- `scan.html` — Mobile view displaying social media links
+- `assets/logo.jpg` — Interior Duct Ltd logo
+- `assets/sample_social_qr.png` — Example QR code
+- `test_e2e.py` — End-to-end testing script
 
-Deploy to GitHub Pages:
-1. Create a new repository on GitHub and push these files.
-2. Enable GitHub Pages in repository settings from the `main` branch and root folder.
-3. After publishing, the site will be available at `https://<your-user>.github.io/<repo-name>/`.
+## ✨ Features
 
-The social media QR codes will link to:
-- `https://<your-user>.github.io/<repo-name>/scan.html?links=[social-links-json]`
+### 1. **Single URL QR Generation**
+   - Generate QR for any URL
+   - Optional embedded logo
+   - Campaign tracking
+   - Download as PNG
 
-Dependencies:
-- `qrcodejs` (CDN) — client-side QR code generation
-- `JSZip` (CDN) — batch ZIP file creation
-- `FileSaver.js` (CDN) — client-side file downloads
+### 2. **Social Media Links Mode** ⭐ (Main Feature)
+   - **Dynamic rows** — Add multiple social platforms at once
+   - **Auto-generate** — Pre-fill all Interior Duct Ltd links (WhatsApp, Instagram, TikTok, Facebook, X, YouTube, LinkedIn)
+   - **Single QR Code** — One scan displays all social links
+   - **Mobile-optimized** — Branded card interface with clickable links
+   - **Download QR** — Save the generated QR as PNG
 
-Notes:
-- All QR generation and processing happens in the browser; no data is sent to external servers
-- Social media links are encoded in the URL query parameter, visible but not transmitted to any third party
-- The embedded logo on QR codes uses canvas composition for quality output
+### 3. **Batch Generation**
+   - Paste multiple URLs (one per line)
+   - Generate grid of QR codes
+   - Download all as ZIP file
 
-Next steps I can take for you:
-- Customize the social media platform selection (add/remove channels)
-- Adjust the styling of the mobile view (`scan.html`)
-- Add analytics tracking within your own infrastructure
-- Optimize QR code sizes for print quality
+## 🎯 Quick Start
 
+### For End Users (Marketing Team)
+
+1. **Open:** https://barth-cyber.github.io/IDL-QrGen/
+2. **Go to:** "Social Media Links Mode"
+3. **One-Click Option:** Click **"⟳ Use Interior Duct Ltd Links"** 
+   - Auto-fills all social channels
+   - Generates QR automatically
+   - Shows download button
+4. **Download** the QR code PNG
+5. **Share** — Print on materials, add to digital assets
+6. **Scan Flow:**
+   - Customer scans QR
+   - Opens mobile view with all social links
+   - Can tap WhatsApp, Instagram, TikTok, etc. to connect
+
+### For Custom Links
+
+1. **Add Rows:** Select platform → Enter URL
+2. **Auto-Add:** New row appears when current is filled
+3. **Remove Rows:** Click "Remove" button (shows when 2+ rows)
+4. **Generate:** Click "Generate Social QR Code"
+5. **Download:** Click "Download Social QR Code (PNG)"
+
+## 📱 Mobile View (scan.html)
+
+When a QR is scanned, customers see:
+- **Header:** Interior Duct Ltd logo + tagline ("Functionality, Durability, Aesthetics")
+- **Section:** "Connect with Us On"
+- **Social Cards:** Each platform with icon, name, and clickable link
+- **Platforms:** WhatsApp, Instagram, TikTok, Facebook, X, YouTube, LinkedIn
+
+All social links open directly in their respective apps/websites.
+
+## 🔧 Customization
+
+### Add/Remove Platforms
+
+Edit `index.html` line ~232 (Social platform display names):
+```javascript
+const platformNames = {
+    'whatsapp': 'WhatsApp Business',
+    'instagram': 'Instagram',
+    // ...add or remove platforms
+};
+```
+
+Edit `scan.html` for platform icons/styling (lines ~140–180).
+
+### Update Default Links
+
+In `index.html`, `autoGenerateDefaultLinks()` function (line ~310):
+```javascript
+const defaultLinks = [
+    { platform: 'whatsapp', url: 'YOUR_WHATSAPP_LINK' },
+    { platform: 'instagram', url: 'YOUR_INSTAGRAM_LINK' },
+    // ...
+];
+```
+
+### Change Tagline
+
+In `scan.html` header section (line ~54):
+```html
+<div class="company-description">
+    Functionality, Durability, Aesthetics
+</div>
+```
+
+## 🛠 Tech Stack
+
+- **HTML5/CSS3/JavaScript** — Client-side only
+- **QR.js** (CDN) — QR code generation
+- **JSZip + FileSaver.js** (CDN) — Batch ZIP downloads
+- **GitHub Pages** — Free hosting
+
+## 🔒 Privacy
+
+- ✅ No tracking pixels or analytics
+- ✅ No external server communication
+- ✅ Links encoded in URL (visible but not transmitted)
+- ✅ All QR generation happens in-browser
+
+## 📊 Testing
+
+Run the end-to-end test:
+```bash
+python test_e2e.py
+```
+
+Output shows:
+- Dynamic row collection ✓
+- URL encoding ✓
+- Scan page parsing ✓
+- QR validity ✓
+
+## 📖 Workflow Example
+
+**Marketing creates a QR:**
+1. Opens https://barth-cyber.github.io/IDL-QrGen/
+2. Clicks "Use Interior Duct Ltd Links"
+3. Downloads QR PNG
+4. Prints on brochures/business cards
+
+**Customer scans it:**
+1. Opens camera → Scans QR
+2. Redirected to mobile view
+3. Sees all 7 social platforms
+4. Taps "WhatsApp Business" → Opens WhatsApp
+5. Taps "Instagram" → Opens Instagram
+6. Can repeat for any platform
+
+## 🚀 Deployment
+
+Already hosted on GitHub Pages. To deploy your own:
+
+```bash
+# 1. Create repo on GitHub
+# 2. Clone and add files
+git clone https://github.com/YOUR-USER/IDL-QrGen.git
+cd IDL-QrGen
+git add .
+git commit -m "Initial commit"
+git push
+
+# 3. Enable Pages in repo settings (main branch, root folder)
+# 4. Access at https://YOUR-USER.github.io/IDL-QrGen/
+```
+
+## 📝 License
+
+Private project for Interior Duct Ltd.
+
+---
+
+**Need help?** Check [index.html](index.html) for source code or run `test_e2e.py` to validate the system.
 
