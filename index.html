@@ -111,6 +111,41 @@
 
                 <hr style="margin:16px 0">
 
+                <hr style="margin:16px 0">
+
+                <h2>Social Media Links Mode</h2>
+                <div class="form-group">
+                    <label for="socialPlatform">Add Social Platform</label>
+                    <select id="socialPlatform">
+                        <option value="">-- Select Platform --</option>
+                        <option value="whatsapp">WhatsApp Business</option>
+                        <option value="instagram">Instagram Channel</option>
+                        <option value="facebook">Facebook Page</option>
+                        <option value="tiktok">TikTok Profile</option>
+                        <option value="youtube">YouTube Channel</option>
+                        <option value="linkedin">LinkedIn Profile</option>
+                        <option value="twitter">Twitter (X)</option>
+                        <option value="pinterest">Pinterest</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="socialUrl">Platform URL</label>
+                    <input type="url" id="socialUrl" placeholder="https://wa.me/1234567890 or https://instagram.com/..." />
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-generate" onclick="addSocialLink()">Add Link</button>
+                </div>
+
+                <div id="socialLinksList" style="margin-top:12px; display:none;">
+                    <label style="display:block; margin-bottom:8px">Added Social Links:</label>
+                    <div id="socialLinksDisplay" style="background:#f9f9f9; border:1px solid #eee; border-radius:6px; padding:8px"></div>
+                    <button class="btn-generate" onclick="generateSocialQR()" style="width:100%; margin-top:10px">Generate Social QR Code</button>
+                </div>
+
+                <hr style="margin:16px 0">
+
                 <h2>Batch Generation</h2>
                 <div class="form-group">
                     <label for="bulkInput">Paste list (one per line) — format: label,https://url.com</label>
@@ -145,6 +180,19 @@
     <script>
         let currentQR = null;
         let currentQRData = null;
+        let socialLinks = []; // Storage for social media links
+
+        // Social platform display names
+        const platformNames = {
+            'whatsapp': 'WhatsApp Business',
+            'instagram': 'Instagram Channel',
+            'facebook': 'Facebook Page',
+            'tiktok': 'TikTok Profile',
+            'youtube': 'YouTube Channel',
+            'linkedin': 'LinkedIn Profile',
+            'twitter': 'Twitter (X)',
+            'pinterest': 'Pinterest'
+        };
 
         function createQRCodeElement(text, size) {
             const container = document.createElement('div');
@@ -303,6 +351,84 @@
 
         window.addEventListener('load', () => { document.getElementById('urlInput').focus(); });
         document.getElementById('urlInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') generateQR(); });
+
+        // Social Media Links Mode Functions
+        function addSocialLink() {
+            const platform = document.getElementById('socialPlatform').value.trim();
+            const url = document.getElementById('socialUrl').value.trim();
+            
+            if (!platform) { alert('Please select a platform'); return; }
+            if (!url) { alert('Please enter a URL'); return; }
+            
+            try { new URL(url); } catch { alert('Please enter a valid URL'); return; }
+            
+            // Add to list
+            socialLinks.push({ platform, url, label: platformNames[platform] || platform });
+            
+            // Update display
+            updateSocialLinksDisplay();
+            
+            // Clear inputs
+            document.getElementById('socialPlatform').value = '';
+            document.getElementById('socialUrl').value = '';
+        }
+
+        function updateSocialLinksDisplay() {
+            const container = document.getElementById('socialLinksDisplay');
+            const listContainer = document.getElementById('socialLinksList');
+            
+            if (socialLinks.length === 0) {
+                listContainer.style.display = 'none';
+                return;
+            }
+            
+            listContainer.style.display = 'block';
+            container.innerHTML = socialLinks.map((link, idx) => `
+                <div style="padding:8px; background:white; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center">
+                    <span><strong>${link.label}</strong></span>
+                    <button onclick="removeSocialLink(${idx})" style="background:#f0f0f0; border:0; padding:4px 8px; border-radius:3px; cursor:pointer; font-size:12px">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function removeSocialLink(idx) {
+            socialLinks.splice(idx, 1);
+            updateSocialLinksDisplay();
+        }
+
+        async function generateSocialQR() {
+            if (socialLinks.length === 0) { alert('Please add at least one social link'); return; }
+            
+            const size = parseInt(document.getElementById('qrSize').value || '300', 10);
+            const embedLogo = document.getElementById('embedLogo').checked;
+            
+            // Create JSON string of social links
+            const linksJson = JSON.stringify(socialLinks.map(link => ({ 
+                label: link.label, 
+                platform: link.platform,
+                url: link.url 
+            })));
+            
+            // Build scan URL with encoded links
+            const scanUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}scan.html?links=${encodeURIComponent(linksJson)}`;
+            
+            const container = document.getElementById('qrContainer');
+            clearElement(container);
+
+            const el = createQRCodeElement(scanUrl, size);
+            container.appendChild(el);
+
+            setTimeout(async () => {
+                const inner = container.querySelector('canvas, img');
+                if (!inner) return;
+                const composed = await drawCanvasWithLogo(inner, getLogoUrl(), size, embedLogo);
+                clearElement(container);
+                container.appendChild(composed);
+                currentQR = composed;
+                currentQRData = { url: scanUrl, size };
+                document.getElementById('downloadBtn').disabled = false;
+            }, 50);
+        }
     </script>
 </body>
 </html>

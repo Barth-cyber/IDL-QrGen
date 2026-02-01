@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interior Duct Ltd - Find Me On</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .logo-section {
+            margin-bottom: 20px;
+        }
+
+        .logo-section img {
+            max-width: 80px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .company-description {
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.9;
+            color: #ecf0f1;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            padding: 15px 18px;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .link-card:hover {
+            background: #f0f0f0;
+            border-color: #2c3e50;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-card:active {
+            transform: translateX(3px);
+        }
+
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .link-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .link-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .link-description {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .link-arrow {
+            font-size: 20px;
+            color: #bdc3c7;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .link-card:hover .link-arrow {
+            color: #2c3e50;
+            transform: translateX(3px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 15px 20px;
+            font-size: 12px;
+            color: #95a5a6;
+            background: #f8f8f8;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* Icon styles for different platforms */
+        .icon-whatsapp {
+            color: #25D366;
+        }
+
+        .icon-instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .icon-facebook {
+            color: #1877F2;
+        }
+
+        .icon-tiktok {
+            color: #000000;
+        }
+
+        .icon-youtube {
+            color: #FF0000;
+        }
+
+        .icon-linkedin {
+            color: #0A66C2;
+        }
+
+        .icon-twitter {
+            color: #1DA1F2;
+        }
+
+        .icon-pinterest {
+            color: #E60023;
+        }
+
+        .icon-phone {
+            color: #FF9800;
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 25px 15px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .company-name {
+                font-size: 20px;
+            }
+
+            .company-description {
+                font-size: 12px;
+            }
+
+            .link-card {
+                padding: 12px 15px;
+            }
+
+            .link-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+
+            .link-label {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <img src="assets/logo.jpg" alt="Interior Duct Ltd" id="logo">
+            </div>
+            <div class="company-name">Interior Duct Ltd</div>
+            <div class="company-description">
+                The love of organic material and uncompromising focus on quality for kitchen and living spaces.
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="section-title">Find Me On</div>
+            <div class="links-container" id="linksContainer">
+                <!-- Links will be inserted here dynamically -->
+            </div>
+        </div>
+
+        <div class="footer">
+            Crafted with care for Interior Duct Ltd
+        </div>
+    </div>
+
+    <script>
+        // Parse query parameters
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return params;
+        }
+
+        // Icon mapping for different platforms
+        const iconMap = {
+            'whatsapp': '💬',
+            'instagram': '📷',
+            'facebook': '👥',
+            'tiktok': '🎵',
+            'youtube': '▶️',
+            'linkedin': '💼',
+            'twitter': '𝕏',
+            'pinterest': '📌',
+            'phone': '☎️',
+            'email': '✉️'
+        };
+
+        // Platform descriptions
+        const descriptionMap = {
+            'whatsapp': 'WhatsApp Business',
+            'instagram': 'Instagram Channel',
+            'facebook': 'Facebook Page',
+            'tiktok': 'TikTok Profile',
+            'youtube': 'YouTube Channel',
+            'linkedin': 'LinkedIn Profile',
+            'twitter': 'Twitter/X Profile',
+            'pinterest': 'Pinterest Board',
+            'phone': 'Call Now',
+            'email': 'Send Email'
+        };
+
+        // Platform icon CSS class mapping
+        const classMap = {
+            'whatsapp': 'icon-whatsapp',
+            'instagram': 'icon-instagram',
+            'facebook': 'icon-facebook',
+            'tiktok': 'icon-tiktok',
+            'youtube': 'icon-youtube',
+            'linkedin': 'icon-linkedin',
+            'twitter': 'icon-twitter',
+            'pinterest': 'icon-pinterest',
+            'phone': 'icon-phone',
+            'email': 'icon-phone'
+        };
+
+        function renderLinks() {
+            const params = getQueryParams();
+            const linksContainer = document.getElementById('linksContainer');
+            
+            // Try to parse 'links' JSON parameter first
+            let links = [];
+            
+            if (params.has('links')) {
+                try {
+                    links = JSON.parse(params.get('links'));
+                    if (!Array.isArray(links)) {
+                        links = [];
+                    }
+                } catch (e) {
+                    console.error('Failed to parse links JSON:', e);
+                }
+            }
+            
+            // If no links JSON, try to collect individual link parameters
+            if (links.length === 0) {
+                for (const [key, value] of params.entries()) {
+                    if (key !== 'links' && value) {
+                        const platformName = key.toLowerCase();
+                        links.push({
+                            label: descriptionMap[platformName] || platformName.charAt(0).toUpperCase() + platformName.slice(1),
+                            platform: platformName,
+                            url: value
+                        });
+                    }
+                }
+            }
+
+            // If still no links, show default sample links for Interior Duct Ltd
+            if (links.length === 0) {
+                links = [
+                    {
+                        label: 'WhatsApp Business',
+                        platform: 'whatsapp',
+                        url: 'https://wa.me/1234567890'
+                    },
+                    {
+                        label: 'Instagram Channel',
+                        platform: 'instagram',
+                        url: 'https://instagram.com/interiorductltd'
+                    }
+                ];
+            }
+
+            // Render all links
+            if (links.length > 0) {
+                linksContainer.innerHTML = links.map((link, index) => {
+                    const platformKey = link.platform ? link.platform.toLowerCase() : '';
+                    const icon = iconMap[platformKey] || '🔗';
+                    const cssClass = classMap[platformKey] || '';
+                    
+                    return `
+                        <a href="${link.url}" class="link-card" target="_blank" rel="noopener noreferrer">
+                            <div class="link-icon ${cssClass}">
+                                ${icon}
+                            </div>
+                            <div class="link-info">
+                                <div class="link-label">${link.label}</div>
+                                ${link.description ? `<div class="link-description">${link.description}</div>` : ''}
+                            </div>
+                            <div class="link-arrow">→</div>
+                        </a>
+                    `;
+                }).join('');
+            } else {
+                linksContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">No links found. Please scan a valid QR code.</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render links on page load
+        window.addEventListener('load', renderLinks);
+        renderLinks();
+    </script>
+</body>
+</html>
