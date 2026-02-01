@@ -1,0 +1,14 @@
+# Node/npm artifacts
+node_modules/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Generated zips
+*.zip
+
+# Log
+*.log

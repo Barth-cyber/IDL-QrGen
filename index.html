@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interior Duct Ltd - QR Code Generator</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); max-width: 1100px; width:100%; overflow:hidden; }
+        .header {
+            background: linear-gradient(135deg, #2b2b2b 0%, #444 100%);
+            color: white; padding: 28px 20px; display:flex; align-items:center; gap:16px;
+        }
+        .header img.logo { height:56px; width:auto; }
+        .header .title { font-size:22px; font-weight:700; }
+        .header .subtitle { font-size:13px; opacity:0.9; }
+        .content { display:grid; grid-template-columns: 1fr 1fr; gap:28px; padding:28px; }
+        .input-section h2, .qr-section h2 { margin:0 0 12px 0; font-size:18px }
+        .form-group { margin-bottom:14px }
+        label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:#444 }
+        input, select, textarea { width:100%; padding:10px 12px; border:1.5px solid #ddd; border-radius:6px; font-size:14px }
+        textarea { min-height:72px; resize:vertical }
+        .helper-text { font-size:12px; color:#888; margin-top:6px }
+        .button-group { display:flex; gap:10px; margin-top:10px }
+        button { cursor:pointer; border:0; border-radius:6px; padding:10px 14px; font-weight:700 }
+        .btn-generate { background: linear-gradient(135deg,#667eea,#764ba2); color:#fff; }
+        .btn-reset { background:#f0f0f0; color:#333 }
+        .btn-download { background:#2e7d32; color:#fff; width:100%; margin-top:10px; padding:10px }
+        .qr-preview { background:#f9f9f9; border:1px solid #eee; border-radius:8px; padding:18px; display:flex; align-items:center; justify-content:center; min-height:300px }
+        .qr-placeholder { color:#999; text-align:center }
+        .batch-controls { margin-top:10px }
+        .batch-list { display:grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-top:12px }
+        .batch-item { background:#fff; border:1px solid #eee; padding:8px; border-radius:6px; text-align:center }
+        .batch-item button { width:100%; margin-top:8px }
+        .options { display:flex; gap:8px; align-items:center; margin-top:6px }
+
+        @media (max-width: 820px) {
+            .content { grid-template-columns: 1fr; padding:16px }
+            body { background-image: url('assets/furniture-bg.svg'); background-size:cover; background-position:center; }
+            .header { flex-direction:column; align-items:flex-start; gap:8px }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img class="logo" src="assets/logo.jpg" alt="Interior Duct Ltd logo">
+            <div>
+                <div class="title">Interior Duct Ltd</div>
+                <div class="subtitle">Multi-Channel QR Code Generator — private & local</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h2>Generate QR Code</h2>
+
+                <div class="form-group">
+                    <label for="channelSelect">Select Channel</label>
+                    <select id="channelSelect">
+                        <option value="">-- Select a Channel --</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="twitter">Twitter (X)</option>
+                        <option value="pinterest">Pinterest</option>
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="custom">Custom URL</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="urlInput">Link / URL</label>
+                    <input type="url" id="urlInput" placeholder="https://example.com" />
+                    <div class="helper-text">Enter the full URL you want the QR code to link to</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="campaignInput">Campaign Name</label>
+                    <input type="text" id="campaignInput" placeholder="e.g., Spring 2026 Campaign" />
+                </div>
+
+                <div class="form-group">
+                    <label for="emailInput">Contact Email (Optional)</label>
+                    <input type="email" id="emailInput" placeholder="your@email.com" />
+                </div>
+
+                <div class="form-group">
+                    <label>QR Options</label>
+                    <div class="options">
+                        <label><input type="checkbox" id="embedLogo" checked> Embed logo in QR</label>
+                        <label style="margin-left:8px">Size: <select id="qrSize"><option>300</option><option>400</option><option>200</option></select></label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-generate" onclick="generateQR()">Generate QR Code</button>
+                    <button class="btn-reset" onclick="resetForm()">Reset</button>
+                </div>
+
+                <hr style="margin:16px 0">
+
+                <h2>Batch Generation</h2>
+                <div class="form-group">
+                    <label for="bulkInput">Paste list (one per line) — format: label,https://url.com</label>
+                    <textarea id="bulkInput" placeholder="ShowroomLink,https://example.com/showroom\nContact,https://example.com/contact"></textarea>
+                    <div class="helper-text">Lines without a comma will be treated as a URL only (label auto-generated)</div>
+                </div>
+                <div class="batch-controls">
+                    <button class="btn-generate" onclick="generateBatch()">Generate Batch</button>
+                    <button class="btn-reset" onclick="clearBatch()">Clear Batch</button>
+                    <button class="btn-download" id="downloadAllBtn" onclick="downloadAllZip()" disabled>Download All (ZIP)</button>
+                </div>
+                <div id="batchList" class="batch-list"></div>
+            </div>
+
+            <div class="qr-section">
+                <h2>QR Code Preview</h2>
+                <div class="qr-preview">
+                    <div id="qrContainer" class="qr-placeholder">Enter a URL and click "Generate QR Code" to see your QR code here</div>
+                </div>
+                <div class="download-section">
+                    <button class="btn-download" id="downloadBtn" onclick="downloadQR()" disabled>Download QR Code (PNG)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <script>
+        let currentQR = null;
+        let currentQRData = null;
+
+        function createQRCodeElement(text, size) {
+            const container = document.createElement('div');
+            const qrEl = document.createElement('div');
+            container.appendChild(qrEl);
+            new QRCode(qrEl, { text: text, width: size, height: size, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.H });
+            return container;
+        }
+
+        async function drawCanvasWithLogo(sourceCanvas, logoUrl, size, embedLogo) {
+            const dest = document.createElement('canvas');
+            dest.width = size; dest.height = size;
+            const ctx = dest.getContext('2d');
+            if (sourceCanvas.tagName === 'IMG') {
+                await new Promise((res) => { sourceCanvas.onload = res; if (sourceCanvas.complete) res(); });
+                ctx.drawImage(sourceCanvas, 0, 0, size, size);
+            } else {
+                ctx.drawImage(sourceCanvas, 0, 0, size, size);
+            }
+
+            if (embedLogo && logoUrl) {
+                const img = new Image();
+                img.src = logoUrl;
+                await new Promise((res) => { img.onload = res; img.onerror = res; });
+                const logoSize = Math.floor(size * 0.22);
+                const x = (size - logoSize) / 2;
+                const y = (size - logoSize) / 2;
+                const radius = 8;
+                ctx.fillStyle = '#ffffff';
+                roundRect(ctx, x - 6, y - 6, logoSize + 12, logoSize + 12, radius);
+                ctx.fill();
+                ctx.drawImage(img, x, y, logoSize, logoSize);
+            }
+
+            return dest;
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        function clearElement(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+        function getLogoUrl() { return 'assets/kitchen_cabinet_logo.svg'; }
+
+        function generateQR() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) { alert('Please enter a URL'); return; }
+            try { new URL(url); } catch { alert('Please enter a valid URL'); return; }
+
+            const size = parseInt(document.getElementById('qrSize').value || '300', 10);
+            const embedLogo = document.getElementById('embedLogo').checked;
+
+            const container = document.getElementById('qrContainer');
+            clearElement(container);
+
+            const el = createQRCodeElement(url, size);
+            container.appendChild(el);
+
+            setTimeout(async () => {
+                const inner = container.querySelector('canvas, img');
+                if (!inner) return;
+                const composed = await drawCanvasWithLogo(inner, getLogoUrl(), size, embedLogo);
+                clearElement(container);
+                container.appendChild(composed);
+                currentQR = composed;
+                currentQRData = { url, size };
+                document.getElementById('downloadBtn').disabled = false;
+            }, 50);
+        }
+
+        function downloadQR() {
+            if (!currentQR) { alert('Generate a QR first'); return; }
+            const campaign = (document.getElementById('campaignInput').value || 'qr').replace(/\s+/g,'_');
+            const filename = `IDL_QR_${campaign}_${new Date().toISOString().slice(0,10)}.png`;
+            currentQR.toBlob((blob) => { saveAs(blob, filename); });
+        }
+
+        function resetForm() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('campaignInput').value = '';
+            document.getElementById('emailInput').value = '';
+            document.getElementById('channelSelect').value = '';
+            document.getElementById('embedLogo').checked = true;
+            document.getElementById('qrSize').value = '300';
+            const container = document.getElementById('qrContainer');
+            clearElement(container);
+            container.textContent = 'Enter a URL and click "Generate QR Code" to see your QR code here';
+            document.getElementById('downloadBtn').disabled = true;
+        }
+
+        function parseBulkLines(text) {
+            return text.split('\n').map(line => line.trim()).filter(Boolean).map((line, idx) => {
+                const comma = line.indexOf(',');
+                if (comma === -1) return { label: `qr_${idx+1}`, url: line };
+                const label = line.slice(0, comma).trim();
+                const url = line.slice(comma+1).trim();
+                return { label: label || `qr_${idx+1}`, url };
+            });
+        }
+
+        async function generateBatch() {
+            const text = document.getElementById('bulkInput').value;
+            if (!text.trim()) { alert('Paste at least one line to generate.'); return; }
+            const items = parseBulkLines(text);
+            const list = document.getElementById('batchList');
+            clearElement(list);
+            const size = 300;
+            const embedLogo = document.getElementById('embedLogo').checked;
+
+            for (const it of items) {
+                const wrapper = document.createElement('div'); wrapper.className='batch-item';
+                const label = document.createElement('div'); label.textContent = it.label; label.style.fontWeight='600'; label.style.marginBottom='8px';
+                wrapper.appendChild(label);
+                const el = createQRCodeElement(it.url, size);
+                wrapper.appendChild(el);
+                list.appendChild(wrapper);
+
+                await new Promise(r => setTimeout(r, 40));
+                const inner = wrapper.querySelector('canvas, img');
+                const composed = await drawCanvasWithLogo(inner, getLogoUrl(), size, embedLogo);
+                clearElement(el);
+                el.appendChild(composed);
+
+                const btn = document.createElement('button'); btn.textContent = 'Download'; btn.className='btn-download'; btn.style.marginTop='8px';
+                btn.onclick = () => { composed.toBlob(b => saveAs(b, `${it.label.replace(/\s+/g,'_')}.png`)); };
+                wrapper.appendChild(btn);
+            }
+
+            document.getElementById('downloadAllBtn').disabled = false;
+        }
+
+        function clearBatch() { clearElement(document.getElementById('batchList')); document.getElementById('bulkInput').value=''; document.getElementById('downloadAllBtn').disabled = true; }
+
+        async function downloadAllZip() {
+            const list = Array.from(document.querySelectorAll('#batchList .batch-item'));
+            if (!list.length) return alert('No batch items');
+            const zip = new JSZip();
+            for (const item of list) {
+                const label = item.querySelector('div').textContent.replace(/\s+/g,'_');
+                const canvas = item.querySelector('canvas');
+                if (!canvas) continue;
+                const data = canvas.toDataURL('image/png');
+                const b = data.split(',')[1];
+                zip.file(`${label}.png`, b, {base64:true});
+            }
+            const content = await zip.generateAsync({type:'blob'});
+            saveAs(content, `IDL_QR_Batch_${new Date().toISOString().slice(0,10)}.zip`);
+        }
+
+        window.addEventListener('load', () => { document.getElementById('urlInput').focus(); });
+        document.getElementById('urlInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') generateQR(); });
+    </script>
+</body>
+</html>
