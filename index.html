@@ -116,20 +116,6 @@
                 <h2>Social Media Links Mode</h2>
                 <div class="helper-text" style="margin-bottom:12px;">Add one or more social platforms and their URLs. As you fill a row a new empty row will appear.</div>
                 
-                <div id="iconManager" style="margin:12px 0 6px 0; padding:10px; border:1px dashed #e6e6e6; border-radius:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-weight:700">Manage Platform Icons</div>
-                        <div style="font-size:12px; color:#666">Upload custom icons (stored locally in your browser)</div>
-                    </div>
-                    <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
-                        <button id="exportIconsBtn" class="btn-generate" type="button" style="padding:8px 10px; font-weight:600;">Export Icons</button>
-                        <input id="importIconsFile" type="file" accept="application/json" style="display:none" />
-                        <button id="importIconsBtn" class="btn-reset" type="button" style="padding:8px 10px; font-weight:600;">Import Icons</button>
-                        <div style="flex:1"></div>
-                    </div>
-                    <div id="iconGrid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-top:8px"></div>
-                </div>
-
                 <div id="socialRowsContainer" style="margin-top:6px;">
                     <!-- Dynamic rows will be inserted here -->
                 </div>
@@ -205,18 +191,6 @@
             container.style.gap = '8px';
             container.style.alignItems = 'center';
 
-            const iconPreview = document.createElement('div');
-            iconPreview.style.width = '40px';
-            iconPreview.style.height = '40px';
-            iconPreview.style.borderRadius = '50%';
-            iconPreview.style.overflow = 'hidden';
-            iconPreview.style.flex = '0 0 auto';
-            iconPreview.style.background = '#fff';
-            iconPreview.style.display = 'flex';
-            iconPreview.style.alignItems = 'center';
-            iconPreview.style.justifyContent = 'center';
-            iconPreview.style.border = '1px solid #eee';
-
             const select = document.createElement('select');
             select.className = 'social-platform';
             select.style.minWidth = '180px';
@@ -257,17 +231,6 @@
             select.addEventListener('change', rowChanged);
             input.addEventListener('input', rowChanged);
 
-            // Update icon preview when platform changes
-            select.addEventListener('change', async () => {
-                const p = select.value;
-                const src = await getPlatformIcon(p);
-                setIconPreview(iconPreview, src, p);
-            });
-
-            // initialize preview for passed platform
-            (async () => { const src = await getPlatformIcon(platform); setIconPreview(iconPreview, src, platform); })();
-
-            container.appendChild(iconPreview);
             container.appendChild(select);
             container.appendChild(input);
             container.appendChild(removeBtn);
@@ -485,110 +448,6 @@
             }
             return out;
         }
-
-        // --- Icon manager: store icons in localStorage as data URLs ---
-        const managedPlatforms = Object.keys(platformNames);
-
-        function dataKeyForPlatform(p) { return `icon_${p}`; }
-
-        async function getPlatformIcon(platform) {
-            if (!platform) return null;
-            const stored = localStorage.getItem(dataKeyForPlatform(platform));
-            if (stored) return stored;
-            // fallback to assets files (prefer webp/avif/png)
-            const fallbacks = [`assets/${platform}.png`, `assets/${platform}.webp`, `assets/${platform}.avif`, `assets/social.webp`, `assets/Social2.avif`];
-            for (const u of fallbacks) {
-                try {
-                    // attempt to load as Image to confirm existence
-                    const found = await new Promise((res) => {
-                        const img = new Image(); img.onload = () => res(true); img.onerror = () => res(false); img.src = u;
-                    });
-                    if (found) return u;
-                } catch (e) {
-                    // ignore
-                }
-            }
-            return null;
-        }
-
-        function setIconPreview(container, src, platform) {
-            container.innerHTML = '';
-            if (!src) {
-                container.textContent = '🔗';
-                return;
-            }
-            const img = document.createElement('img');
-            img.src = src; img.alt = platform || 'icon';
-            img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
-            container.appendChild(img);
-        }
-
-        function renderIconManager() {
-            const grid = document.getElementById('iconGrid');
-            grid.innerHTML = '';
-            for (const p of managedPlatforms) {
-                const card = document.createElement('div');
-                card.style.border = '1px solid #f0f0f0'; card.style.padding='8px'; card.style.borderRadius='6px'; card.style.display='flex'; card.style.gap='8px'; card.style.alignItems='center';
-                const preview = document.createElement('div'); preview.style.width='40px'; preview.style.height='40px'; preview.style.borderRadius='6px'; preview.style.overflow='hidden'; preview.style.background='#fff'; preview.style.border='1px solid #eee';
-                const label = document.createElement('div'); label.style.flex='1'; label.innerText = platformNames[p] || p;
-                const file = document.createElement('input'); file.type='file'; file.accept='image/*'; file.style.flex='0 0 auto';
-                file.onchange = async (e) => {
-                    const f = e.target.files && e.target.files[0]; if (!f) return;
-                    const reader = new FileReader(); reader.onload = () => {
-                        localStorage.setItem(dataKeyForPlatform(p), reader.result);
-                        setIconPreview(preview, reader.result, p);
-                    }; reader.readAsDataURL(f);
-                };
-                const removeBtn = document.createElement('button'); removeBtn.className='btn-reset'; removeBtn.textContent='Clear'; removeBtn.onclick = () => { localStorage.removeItem(dataKeyForPlatform(p)); (async()=>setIconPreview(preview, await getPlatformIcon(p), p))(); };
-                card.appendChild(preview); card.appendChild(label); card.appendChild(file); card.appendChild(removeBtn);
-                grid.appendChild(card);
-                // initialize preview
-                (async () => { const src = await getPlatformIcon(p); setIconPreview(preview, src, p); })();
-            }
-
-            // wire export / import buttons
-            const exportBtn = document.getElementById('exportIconsBtn');
-            const importBtn = document.getElementById('importIconsBtn');
-            const importFile = document.getElementById('importIconsFile');
-
-            exportBtn.onclick = () => {
-                const out = {};
-                for (const k of managedPlatforms) {
-                    const v = localStorage.getItem(dataKeyForPlatform(k));
-                    if (v) out[k] = v;
-                }
-                const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
-                const name = `idl_icons_export_${new Date().toISOString().slice(0,10)}.json`;
-                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
-            };
-
-            importBtn.onclick = () => importFile.click();
-            importFile.onchange = (e) => {
-                const f = e.target.files && e.target.files[0]; if (!f) return;
-                const r = new FileReader();
-                r.onload = () => {
-                    try {
-                        const obj = JSON.parse(r.result);
-                        let count = 0;
-                        for (const key of Object.keys(obj || {})) {
-                            if (managedPlatforms.includes(key) && typeof obj[key] === 'string') {
-                                localStorage.setItem(dataKeyForPlatform(key), obj[key]);
-                                count++;
-                            }
-                        }
-                        alert(`Imported ${count} icons. The page will refresh to apply changes.`);
-                        renderIconManager();
-                        // update any open social rows previews
-                        const rows = Array.from(document.querySelectorAll('.social-row .social-platform'));
-                        for (const s of rows) s.dispatchEvent(new Event('change'));
-                    } catch (err) { alert('Invalid import file'); }
-                };
-                r.readAsText(f);
-            };
-        }
-
-        // run icon manager render on load
-        window.addEventListener('load', () => { renderIconManager(); });
 
         async function generateSocialQR() {
             const links = collectSocialRows();

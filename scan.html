@@ -108,16 +108,22 @@
         }
 
         .link-icon {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: white;
-            border-radius: 50%;
+            border-radius: 8px;
             margin-right: 15px;
-            font-size: 22px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .link-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .link-info {
@@ -175,45 +181,6 @@
             border-top: 1px solid #e0e0e0;
         }
 
-        /* Icon styles for different platforms */
-        .icon-whatsapp {
-            color: #25D366;
-        }
-
-        .icon-instagram {
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .icon-facebook {
-            color: #1877F2;
-        }
-
-        .icon-tiktok {
-            color: #000000;
-        }
-
-        .icon-youtube {
-            color: #FF0000;
-        }
-
-        .icon-linkedin {
-            color: #0A66C2;
-        }
-
-        .icon-twitter {
-            color: #1DA1F2;
-        }
-
-        .icon-pinterest {
-            color: #E60023;
-        }
-
-        .icon-phone {
-            color: #FF9800;
-        }
-
         @media (max-width: 480px) {
             .header {
                 padding: 25px 15px;
@@ -236,9 +203,9 @@
             }
 
             .link-icon {
-                width: 36px;
-                height: 36px;
-                font-size: 20px;
+                width: 45px;
+                height: 45px;
+                margin-right: 12px;
             }
 
             .link-label {
@@ -272,45 +239,6 @@
     </div>
 
     <script>
-        // Parse query parameters
-        function getQueryParams() {
-            const params = new URLSearchParams(window.location.search);
-            return params;
-        }
-
-        // Icon mapping for different platforms
-        const iconMap = {
-            'whatsapp': '💬',
-            'instagram': '📷',
-            'facebook': '👥',
-            'tiktok': '🎵',
-            'youtube': '▶️',
-            'linkedin': '💼',
-            'twitter': '𝕏',
-            'pinterest': '📌',
-            'phone': '☎️',
-            'email': '✉️'
-        };
-
-        // iconsMap may be provided via query param `icons` as a JSON object mapping platform->dataURL or url,
-        // or via `iconsId` to fetch ./icons/<id>.json (static mapping hosted in repo).
-        let iconsMap = {};
-        async function loadIconsMapFromParams(params) {
-            if (params.has('icons')) {
-                try {
-                    const raw = decodeURIComponent(params.get('icons'));
-                    const parsed = JSON.parse(raw);
-                    if (parsed && typeof parsed === 'object') iconsMap = parsed;
-                } catch (e) { console.warn('Failed to parse icons param', e); }
-            } else if (params.has('iconsId')) {
-                const id = params.get('iconsId');
-                try {
-                    const resp = await fetch(`./icons/${encodeURIComponent(id)}.json`);
-                    if (resp.ok) iconsMap = await resp.json();
-                } catch (e) { console.warn('Failed to fetch icons mapping', e); }
-            }
-        }
-
         // Platform descriptions
         const descriptionMap = {
             'whatsapp': 'WhatsApp Business',
@@ -325,27 +253,30 @@
             'email': 'Send Email'
         };
 
-        // Platform icon CSS class mapping
-        const classMap = {
-            'whatsapp': 'icon-whatsapp',
-            'instagram': 'icon-instagram',
-            'facebook': 'icon-facebook',
-            'tiktok': 'icon-tiktok',
-            'youtube': 'icon-youtube',
-            'linkedin': 'icon-linkedin',
-            'twitter': 'icon-twitter',
-            'pinterest': 'icon-pinterest',
-            'phone': 'icon-phone',
-            'email': 'icon-phone'
+        // Logo mapping for platforms
+        const logoMap = {
+            'whatsapp': 'social logos/WhatsApp1.PNG',
+            'instagram': 'social logos/Instagram.PNG',
+            'facebook': 'social logos/Facebook.PNG',
+            'tiktok': 'social logos/TikTok.PNG',
+            'youtube': 'social logos/YouTube.PNG',
+            'linkedin': 'social logos/LinkedIn.PNG',
+            'twitter': 'social logos/Social2.png'
         };
+
+        // Parse query parameters
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return params;
+        }
 
         async function renderLinks() {
             const params = getQueryParams();
             const linksContainer = document.getElementById('linksContainer');
             
-            // Try to parse 'links' JSON parameter first
             let links = [];
             
+            // Try to parse 'links' JSON parameter first
             if (params.has('links')) {
                 try {
                     links = JSON.parse(params.get('links'));
@@ -360,7 +291,7 @@
             // If no links JSON, try to collect individual link parameters
             if (links.length === 0) {
                 for (const [key, value] of params.entries()) {
-                    if (key !== 'links' && value) {
+                    if (key !== 'links' && key !== 'id' && key !== 'iconsId' && value) {
                         const platformName = key.toLowerCase();
                         links.push({
                             label: descriptionMap[platformName] || platformName.charAt(0).toUpperCase() + platformName.slice(1),
@@ -378,26 +309,11 @@
                     const resp = await fetch(`./links/${encodeURIComponent(id)}.json`);
                     if (resp.ok) {
                         const json = await resp.json();
-                        // Support legacy array format or object with { iconsId?, icons?, links: [...] }
+                        // Support legacy array format or object with { links: [...] }
                         if (Array.isArray(json)) {
                             links = json.map(l => ({ label: l.label || (descriptionMap[l.platform] || l.platform), platform: l.platform, url: l.url }));
-                        } else if (json && typeof json === 'object') {
-                            // If icons mapping provided inline, prefer it
-                            if (json.icons && typeof json.icons === 'object') {
-                                iconsMap = json.icons;
-                            }
-                            // If iconsId provided, fetch that mapping file
-                            if (!iconsMap && json.iconsId) {
-                                try {
-                                    const r2 = await fetch(`./icons/${encodeURIComponent(json.iconsId)}.json`);
-                                    if (r2.ok) iconsMap = await r2.json();
-                                } catch (e) {
-                                    console.warn('Failed to fetch iconsId mapping', json.iconsId, e);
-                                }
-                            }
-                            if (Array.isArray(json.links)) {
-                                links = json.links.map(l => ({ label: l.label || (descriptionMap[l.platform] || l.platform), platform: l.platform, url: l.url }));
-                            }
+                        } else if (json && typeof json === 'object' && Array.isArray(json.links)) {
+                            links = json.links.map(l => ({ label: l.label || (descriptionMap[l.platform] || l.platform), platform: l.platform, url: l.url }));
                         }
                     }
                 } catch (e) {
@@ -405,55 +321,26 @@
                 }
             }
 
-            // Load any icons mapping provided via params (icons or iconsId)
-            await loadIconsMapFromParams(params);
-
-            // If still no links, show default sample links for Interior Duct Ltd
+            // If still no links, show default links for Interior Duct Ltd
             if (links.length === 0) {
                 links = [
-                    {
-                        label: 'WhatsApp Business',
-                        platform: 'whatsapp',
-                        url: 'https://wa.me/1234567890'
-                    },
-                    {
-                        label: 'Instagram Channel',
-                        platform: 'instagram',
-                        url: 'https://instagram.com/interiorductltd'
-                    }
+                    { label: 'WhatsApp Business', platform: 'whatsapp', url: 'https://wa.me/c/2348036850229' },
+                    { label: 'Instagram Channel', platform: 'instagram', url: 'https://www.instagram.com/interiorductltd/' },
+                    { label: 'TikTok Profile', platform: 'tiktok', url: 'https://www.tiktok.com/@interiorductltd' },
+                    { label: 'Facebook Page', platform: 'facebook', url: 'https://www.facebook.com/interior.duct.ltd/' },
+                    { label: 'Twitter (X)', platform: 'twitter', url: 'https://x.com/InteriorDuctLtd' },
+                    { label: 'YouTube Channel', platform: 'youtube', url: 'https://www.youtube.com/@InteriorDuctLtd' },
+                    { label: 'LinkedIn Profile', platform: 'linkedin', url: 'https://www.linkedin.com/company/interior-duct-ltd/' }
                 ];
             }
 
-            // Helper: try to find an icon image for a platform
-            async function findIconForPlatform(platform) {
-                // prefer iconsMap if provided
-                if (iconsMap && iconsMap[platform]) return iconsMap[platform];
-                const variants = [
-                    `assets/${platform}.png`,
-                    `assets/${platform}.webp`,
-                    `assets/${platform}.avif`,
-                    `assets/social.webp`,
-                    `assets/Social2.avif`
-                ];
-                for (const url of variants) {
-                    try {
-                        const resp = await fetch(url, { method: 'HEAD' });
-                        if (resp && resp.ok) return url;
-                    } catch (e) {
-                        // ignore and try next
-                    }
-                }
-                return null;
-            }
-
-            // Render all links (create elements so we can await icon checks)
+            // Render all links
             if (links.length > 0) {
                 linksContainer.innerHTML = '';
                 for (const link of links) {
                     const platformKey = link.platform ? link.platform.toLowerCase() : '';
-                    const cssClass = classMap[platformKey] || '';
-                    const iconUrl = await findIconForPlatform(platformKey);
-
+                    const logoUrl = logoMap[platformKey] || null;
+                    
                     const a = document.createElement('a');
                     a.href = link.url;
                     a.className = 'link-card';
@@ -461,18 +348,15 @@
                     a.rel = 'noopener noreferrer';
 
                     const iconDiv = document.createElement('div');
-                    iconDiv.className = 'link-icon ' + cssClass;
-                    if (iconUrl) {
+                    iconDiv.className = 'link-icon';
+                    
+                    if (logoUrl) {
                         const img = document.createElement('img');
-                        img.src = iconUrl;
+                        img.src = logoUrl;
                         img.alt = platformKey;
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        img.style.borderRadius = '50%';
                         iconDiv.appendChild(img);
                     } else {
-                        iconDiv.textContent = iconMap[platformKey] || '🔗';
+                        iconDiv.textContent = '🔗';
                     }
 
                     const infoDiv = document.createElement('div');
