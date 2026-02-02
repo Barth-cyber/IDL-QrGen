@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interior Duct Ltd - Find Me On</title>
+    <title>Interior Duct Ltd-QrGen</title>
     <style>
         * {
             margin: 0;
@@ -320,7 +320,7 @@
             'email': 'icon-phone'
         };
 
-        function renderLinks() {
+        async function renderLinks() {
             const params = getQueryParams();
             const linksContainer = document.getElementById('linksContainer');
             
@@ -352,6 +352,22 @@
                 }
             }
 
+            // If no links found yet, check for short id param and fetch mapping file
+            if (links.length === 0 && params.has('id')) {
+                const id = params.get('id');
+                try {
+                    const resp = await fetch(`./links/${encodeURIComponent(id)}.json`);
+                    if (resp.ok) {
+                        const json = await resp.json();
+                        if (Array.isArray(json)) {
+                            links = json.map(l => ({ label: l.label || (descriptionMap[l.platform] || l.platform), platform: l.platform, url: l.url }));
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not fetch links for id', id, e);
+                }
+            }
+
             // If still no links, show default sample links for Interior Duct Ltd
             if (links.length === 0) {
                 links = [
@@ -368,26 +384,78 @@
                 ];
             }
 
-            // Render all links
+            // Helper: try to find an icon image for a platform
+            async function findIconForPlatform(platform) {
+                const variants = [
+                    `assets/${platform}.png`,
+                    `assets/${platform}.webp`,
+                    `assets/${platform}.avif`,
+                    `assets/social.webp`,
+                    `assets/Social2.avif`
+                ];
+                for (const url of variants) {
+                    try {
+                        const resp = await fetch(url, { method: 'HEAD' });
+                        if (resp && resp.ok) return url;
+                    } catch (e) {
+                        // ignore and try next
+                    }
+                }
+                return null;
+            }
+
+            // Render all links (create elements so we can await icon checks)
             if (links.length > 0) {
-                linksContainer.innerHTML = links.map((link, index) => {
+                linksContainer.innerHTML = '';
+                for (const link of links) {
                     const platformKey = link.platform ? link.platform.toLowerCase() : '';
-                    const icon = iconMap[platformKey] || '🔗';
                     const cssClass = classMap[platformKey] || '';
-                    
-                    return `
-                        <a href="${link.url}" class="link-card" target="_blank" rel="noopener noreferrer">
-                            <div class="link-icon ${cssClass}">
-                                ${icon}
-                            </div>
-                            <div class="link-info">
-                                <div class="link-label">${link.label}</div>
-                                ${link.description ? `<div class="link-description">${link.description}</div>` : ''}
-                            </div>
-                            <div class="link-arrow">→</div>
-                        </a>
-                    `;
-                }).join('');
+                    const iconUrl = await findIconForPlatform(platformKey);
+
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.className = 'link-card';
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = 'link-icon ' + cssClass;
+                    if (iconUrl) {
+                        const img = document.createElement('img');
+                        img.src = iconUrl;
+                        img.alt = platformKey;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '50%';
+                        iconDiv.appendChild(img);
+                    } else {
+                        iconDiv.textContent = iconMap[platformKey] || '🔗';
+                    }
+
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'link-info';
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = 'link-label';
+                    labelDiv.textContent = link.label;
+                    infoDiv.appendChild(labelDiv);
+                    if (link.description) {
+                        const desc = document.createElement('div');
+                        desc.className = 'link-description';
+                        desc.textContent = link.description;
+                        infoDiv.appendChild(desc);
+                    }
+
+                    const arrowDiv = document.createElement('div');
+                    arrowDiv.className = 'link-arrow';
+                    arrowDiv.textContent = '→';
+
+                    a.appendChild(iconDiv);
+                    a.appendChild(infoDiv);
+                    a.appendChild(arrowDiv);
+
+                    linksContainer.appendChild(a);
+                }
             } else {
                 linksContainer.innerHTML = `
                     <div class="empty-state">
