@@ -1,0 +1,12 @@
+{
+  "iconsId": "idl_icons_v1",
+  "links": [
+    { "label": "WhatsApp Business", "platform": "whatsapp", "url": "https://wa.me/c/2348036850229" },
+    { "label": "Instagram Channel", "platform": "instagram", "url": "https://www.instagram.com/interiorductltd/" },
+    { "label": "TikTok Profile", "platform": "tiktok", "url": "https://www.tiktok.com/@interiorductltd" },
+    { "label": "Facebook Page", "platform": "facebook", "url": "https://www.facebook.com/interior.duct.ltd/" },
+    { "label": "Twitter (X)", "platform": "twitter", "url": "https://x.com/InteriorDuctLtd" },
+    { "label": "YouTube Channel", "platform": "youtube", "url": "https://www.youtube.com/@InteriorDuctLtd" },
+    { "label": "LinkedIn Profile", "platform": "linkedin", "url": "https://www.linkedin.com/company/interior-duct-ltd/" }
+  ]
+}
