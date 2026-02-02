@@ -378,8 +378,26 @@
                     const resp = await fetch(`./links/${encodeURIComponent(id)}.json`);
                     if (resp.ok) {
                         const json = await resp.json();
+                        // Support legacy array format or object with { iconsId?, icons?, links: [...] }
                         if (Array.isArray(json)) {
                             links = json.map(l => ({ label: l.label || (descriptionMap[l.platform] || l.platform), platform: l.platform, url: l.url }));
+                        } else if (json && typeof json === 'object') {
+                            // If icons mapping provided inline, prefer it
+                            if (json.icons && typeof json.icons === 'object') {
+                                iconsMap = json.icons;
+                            }
+                            // If iconsId provided, fetch that mapping file
+                            if (!iconsMap && json.iconsId) {
+                                try {
+                                    const r2 = await fetch(`./icons/${encodeURIComponent(json.iconsId)}.json`);
+                                    if (r2.ok) iconsMap = await r2.json();
+                                } catch (e) {
+                                    console.warn('Failed to fetch iconsId mapping', json.iconsId, e);
+                                }
+                            }
+                            if (Array.isArray(json.links)) {
+                                links = json.links.map(l => ({ label: l.label || (descriptionMap[l.platform] || l.platform), platform: l.platform, url: l.url }));
+                            }
                         }
                     }
                 } catch (e) {
