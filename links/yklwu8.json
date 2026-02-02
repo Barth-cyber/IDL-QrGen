@@ -1,0 +1,37 @@
+[
+  {
+    "label": "WhatsApp Business",
+    "platform": "whatsapp",
+    "url": "https://wa.me/c/2348036850229"
+  },
+  {
+    "label": "Instagram",
+    "platform": "instagram",
+    "url": "https://www.instagram.com/interiorductltd/"
+  },
+  {
+    "label": "TikTok",
+    "platform": "tiktok",
+    "url": "https://www.tiktok.com/@interiorductltd"
+  },
+  {
+    "label": "Facebook",
+    "platform": "facebook",
+    "url": "https://www.facebook.com/interior.duct.ltd/"
+  },
+  {
+    "label": "X (Twitter)",
+    "platform": "twitter",
+    "url": "https://x.com/InteriorDuctLtd"
+  },
+  {
+    "label": "YouTube",
+    "platform": "youtube",
+    "url": "https://www.youtube.com/@InteriorDuctLtd"
+  },
+  {
+    "label": "LinkedIn",
+    "platform": "linkedin",
+    "url": "https://www.linkedin.com/company/interior-duct-ltd/"
+  }
+]
