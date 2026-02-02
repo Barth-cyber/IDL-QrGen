@@ -292,6 +292,25 @@
             'email': '✉️'
         };
 
+        // iconsMap may be provided via query param `icons` as a JSON object mapping platform->dataURL or url,
+        // or via `iconsId` to fetch ./icons/<id>.json (static mapping hosted in repo).
+        let iconsMap = {};
+        async function loadIconsMapFromParams(params) {
+            if (params.has('icons')) {
+                try {
+                    const raw = decodeURIComponent(params.get('icons'));
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === 'object') iconsMap = parsed;
+                } catch (e) { console.warn('Failed to parse icons param', e); }
+            } else if (params.has('iconsId')) {
+                const id = params.get('iconsId');
+                try {
+                    const resp = await fetch(`./icons/${encodeURIComponent(id)}.json`);
+                    if (resp.ok) iconsMap = await resp.json();
+                } catch (e) { console.warn('Failed to fetch icons mapping', e); }
+            }
+        }
+
         // Platform descriptions
         const descriptionMap = {
             'whatsapp': 'WhatsApp Business',
@@ -368,6 +387,9 @@
                 }
             }
 
+            // Load any icons mapping provided via params (icons or iconsId)
+            await loadIconsMapFromParams(params);
+
             // If still no links, show default sample links for Interior Duct Ltd
             if (links.length === 0) {
                 links = [
@@ -386,6 +408,8 @@
 
             // Helper: try to find an icon image for a platform
             async function findIconForPlatform(platform) {
+                // prefer iconsMap if provided
+                if (iconsMap && iconsMap[platform]) return iconsMap[platform];
                 const variants = [
                     `assets/${platform}.png`,
                     `assets/${platform}.webp`,
